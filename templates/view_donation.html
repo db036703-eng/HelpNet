@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Available Donations</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <div class="left">
+        <h1>Available Donations</h1>
+
+        {% for d in donations %}
+        <div class="card">
+            <h3>{{ d[2] }}</h3>
+            <p>Donor: {{ d[1] }}</p>
+            <p>Quantity: {{ d[3] }}</p>
+            <p>Location: {{ d[4] }}</p>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+</body>
+</html>

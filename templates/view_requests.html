@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}NGO Requests - HelpNet{% endblock %}
+
+{% block content %}
+<div class="page-header mt-4 mb-5 fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+        <div class="welcome-section" style="margin-bottom: 0;">
+            <h1 style="font-size: 2.2rem;"><i class="ph ph-megaphone"></i> NGO Requests</h1>
+            <p>Browse urgent items requested by NGOs and help fulfill them.</p>
+        </div>
+
+        <div class="filter-bar glass-card" style="padding: 10px; display: flex; gap: 10px; align-items: center;">
+            <div class="search-bar" style="width: auto; background: rgba(255,255,255,0.02); min-width: 250px;">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search requests..." class="search-input">
+            </div>
+            <select id="urgencyFilter" class="input-modern" style="width: auto; padding: 10px 15px; appearance: none; background: rgba(255,255,255,0.05); cursor: pointer; color: #fff;">
+                <option value="all" style="color: #000;">All Urgency</option>
+                <option value="urgent" style="color: #000;">Urgent</option>
+                <option value="normal" style="color: #000;">Normal</option>
+            </select>
+            <i class="ph ph-caret-down" style="position: absolute; right: 20px; pointer-events: none; color: rgba(255,255,255,0.5);"></i>
+            <button class="icon-btn" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"><i class="ph ph-faders"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="cards-grid fade-in delay-1" id="requestCardsContainer" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+    {% for r in requests %}
+    <div class="glass-card shadow-lg hover-glow p-0 request-card" data-title="{{ r[2]|lower }}" data-ngo="{{ r[1]|lower }}" data-location="{{ r[4]|lower }}" data-urgency="{{ r[7]|lower }}" style="overflow: hidden;">
+        <div style="padding: 20px; display: flex; flex-direction: column; height: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: #fff;">{{ r[2] }}</h3>
+                {% if r[7] == 'Urgent' %}
+                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 4px;">
+                    <i class="ph ph-warning-circle"></i> Urgent
+                </span>
+                {% else %}
+                <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(34, 197, 94, 0.3);">
+                    {{ r[7] }}
+                </span>
+                {% endif %}
+            </div>
+            
+            <p style="color: rgba(255, 255, 255, 0.8); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5; flex-grow: 1;">
+                {{ r[6] }}
+            </p>
+
+            <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; margin-bottom: 8px;">
+                <i class="ph ph-buildings" style="color: #cbd5e1; margin-right: 5px;"></i> {{ r[1] }}
+            </div>
+            <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; margin-bottom: 8px;">
+                <i class="ph ph-stack" style="color: #cbd5e1; margin-right: 5px;"></i> {{ r[3] }}
+            </div>
+            <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; margin-bottom: 20px;">
+                <i class="ph ph-map-pin" style="color: #cbd5e1; margin-right: 5px;"></i> {{ r[4] }}
+            </div>
+            
+            <form action="{{ url_for('fulfill_request', request_id=r[0]) }}" method="POST" style="margin-top: auto;">
+                <button type="submit" class="btn-modern btn-primary" style="padding: 12px 15px; font-size: 0.95rem; width: 100%;">
+                    <i class="ph ph-hand-heart" style="margin-right: 8px; font-size: 1.1rem;"></i> Fulfill Request
+                </button>
+            </form>
+            <button type="button" class="btn-modern btn-secondary mt-2" style="padding: 12px 15px; font-size: 0.95rem; width: 100%; border-color: var(--light-blue); color: var(--light-blue);" onclick="window.openChat('{{ r[1] }}')">
+                <i class="ph ph-chat-centered-text" style="margin-right: 8px; font-size: 1.1rem;"></i> Chat with NGO
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div class="glass-card" style="padding: 60px 40px; text-align: center; grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <i class="ph ph-megaphone" style="font-size: 4rem; color: rgba(255,255,255,0.1); margin-bottom: 20px;"></i>
+        <h3 style="font-size: 1.5rem; margin-bottom: 10px;">No Active Requests</h3>
+        <p style="color: rgba(255,255,255,0.6); font-size: 1.1rem; max-width: 400px;">There are no active NGO requests at the moment. Check back later to help!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const urgencyFilter = document.getElementById('urgencyFilter');
+        const cards = document.querySelectorAll('.request-card');
+
+        function filterCards() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filterValue = urgencyFilter.value.toLowerCase();
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title');
+                const ngo = card.getAttribute('data-ngo');
+                const location = card.getAttribute('data-location');
+                const urgency = card.getAttribute('data-urgency');
+
+                const matchesSearch = title.includes(searchTerm) || ngo.includes(searchTerm) || location.includes(searchTerm);
+                const matchesFilter = filterValue === 'all' || urgency === filterValue;
+
+                if (matchesSearch && matchesFilter) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterCards);
+        urgencyFilter.addEventListener('change', filterCards);
+    });
+</script>
+{% endblock %}

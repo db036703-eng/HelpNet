@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - HelpNet{% endblock %}
+
+{% block extra_head %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Connect to Socket.IO exactly at root
+    const socket = io();
+
+    // Time Ago Formatter
+    function timeAgo(dateString) {
+        if (!dateString) return "some time ago";
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        
+        if (seconds < 60) return "just now";
+        
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
+        
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours} hr${hours !== 1 ? 's' : ''} ago`;
+        
+        const days = Math.floor(hours / 24);
+        return `${days} day${days !== 1 ? 's' : ''} ago`;
+    }
+
+    function updateTimestamps() {
+        document.querySelectorAll('.feed-time').forEach(el => {
+            const timestamp = el.getAttribute('data-timestamp');
+            if (timestamp) {
+                el.innerText = timeAgo(timestamp);
+            }
+        });
+    }
+
+    // Update times every minute
+    setInterval(updateTimestamps, 60000);
+
+    // Initial update
+    updateTimestamps();
+
+    // Listen for real-time new activity
+    socket.on('new_activity', function(data) {
+        const feedList = document.getElementById('live-activity-feed');
+        if (!feedList) return;
+
+        // Remove empty state if it exists
+        const emptyState = feedList.querySelector('.feed-empty');
+        if (emptyState) emptyState.remove();
+
+        const isDonation = data.type === 'donation';
+        const colorClass = isDonation ? 'bg-blue-light' : 'bg-orange-light';
+        const iconClass = isDonation ? 'ph-gift' : 'ph-megaphone';
+        const actionText = isDonation ? 'donated' : 'requested';
+
+        const newItem = document.createElement('div');
+        newItem.className = 'feed-item new-activity-item';
+        newItem.innerHTML = `
+            <div class="feed-icon ${colorClass}">
+                <i class="ph ${iconClass}"></i>
+            </div>
+            <div class="feed-content">
+                <p><strong>${data.user}</strong> ${actionText} <em>${data.item}</em>.</p>
+                <span class="feed-time" data-timestamp="${data.timestamp}">just now</span>
+            </div>
+        `;
+
+        // Prepend animation using insertBefore
+        feedList.insertBefore(newItem, feedList.firstChild);
+    });
+});
+</script>
+<style>
+/* Animation for new feed items */
+.new-activity-item {
+    animation: slideDownFadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes slideDownFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+        background: rgba(0, 123, 255, 0.2);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        background: transparent;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    
+    <!-- Left Column: Actions and Alerts -->
+    <div class="main-column">
+        <section class="welcome-section fade-in">
+            <h1>Welcome back, <span class="text-highlight">{{ name }}</span></h1>
+            <p>Your role: {{ role }} | Ready to make an impact today?</p>
+        </section>
+
+        <section class="action-cards-grid mt-4">
+            {% if role == "Donor" %}
+            <div class="glass-card hover-glow">
+                <div class="card-icon"><i class="ph ph-gift"></i></div>
+                <h3>Donate Items</h3>
+                <p>Share essential items with verified NGOs in your area.</p>
+                <a href="/donate" class="btn-modern btn-primary mt-auto">Start Donation</a>
+            </div>
+
+            <div class="glass-card hover-glow">
+                <div class="card-icon"><i class="ph ph-clock-counter-clockwise"></i></div>
+                <h3>Donation History</h3>
+                <p>Track your past contributions and see your impact.</p>
+                <a href="/donation-history" class="btn-modern btn-secondary mt-auto">View History</a>
+            </div>
+
+            <div class="glass-card hover-glow">
+                <div class="card-icon"><i class="ph ph-megaphone"></i></div>
+                <h3>NGO Requests</h3>
+                <p>Browse urgent items requested by NGOs and help fulfill them.</p>
+                <a href="/view-requests" class="btn-modern btn-secondary mt-auto">View Requests</a>
+            </div>
+            {% elif role == "NGO" %}
+            <div class="glass-card hover-glow">
+                <div class="card-icon"><i class="ph ph-plus-circle"></i></div>
+                <h3>Create Request</h3>
+                <p>Request specific items needed by your organization.</p>
+                <a href="/create-request" class="btn-modern btn-primary mt-auto">Create Request</a>
+            </div>
+
+            <div class="glass-card hover-glow">
+                <div class="card-icon"><i class="ph ph-package"></i></div>
+                <h3>View Donations</h3>
+                <p>Browse available items donated by users.</p>
+                <a href="/view-donations" class="btn-modern btn-secondary mt-auto">Browse Donations</a>
+            </div>
+            {% endif %}
+        </section>
+        
+        <!-- Urgent Requests / Quick Feed -->
+        <section class="urgent-feed mt-5 fade-in delay-1">
+            <h2 class="section-title">
+                <i class="ph ph-warning-circle text-danger"></i> Urgent Highlights
+            </h2>
+            <div class="glass-card p-4 message-banner">
+                <div class="banner-icon">💡</div>
+                <div class="banner-text">
+                    <strong>Tip of the day:</strong> Make sure to clean and organize clothes before donating them. It helps NGOs distribute them faster!
+                </div>
+            </div>
+            <!-- More dynamic content could go here -->
+        </section>
+    </div>
+
+    <!-- Right Column: Stats & Activity -->
+    <div class="side-column">
+        <!-- Stats Card -->
+        <div class="glass-card stats-widget shadow-lg fade-in delay-2">
+            <h3 class="widget-title"><i class="ph ph-trend-up"></i> Impact Overview</h3>
+            
+            <div class="stat-row">
+                <div class="stat-icon bg-blue-light"><i class="ph ph-users"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">Total Donations</div>
+                    <div class="stat-value">{{ total_donations }}</div>
+                </div>
+            </div>
+            
+            <div class="stat-row">
+                <div class="stat-icon bg-green-light"><i class="ph ph-check-circle"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">Requests Fulfilled</div>
+                    <div class="stat-value">{{ requests_fulfilled }}</div>
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-icon bg-purple-light"><i class="ph ph-package"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">Items Donated</div>
+                    <div class="stat-value">{{ total_items }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="glass-card activity-feed mt-4 fade-in delay-3">
+            <h3 class="widget-title"><i class="ph ph-activity"></i> Recent Activity</h3>
+            
+            <div class="feed-list" id="live-activity-feed">
+                {% if activities %}
+                    {% for act in activities %}
+                    <div class="feed-item">
+                        <div class="feed-icon {% if act[0] == 'donation' %}bg-blue-light{% else %}bg-orange-light{% endif %}">
+                            <i class="ph {% if act[0] == 'donation' %}ph-gift{% else %}ph-megaphone{% endif %}"></i>
+                        </div>
+                        <div class="feed-content">
+                            <p><strong>{{ act[1] }}</strong> {% if act[0] == 'donation' %}donated{% else %}requested{% endif %} <em>{{ act[2] }}</em>.</p>
+                            <span class="feed-time">some time ago</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="feed-empty">
+                        <i class="ph ph-ghost"></i>
+                        <p>No recent activity yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

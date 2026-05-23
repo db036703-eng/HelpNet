@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}HelpNet Dashboard{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <!-- Phosphor Icons for modern sleek icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Socket.IO library for real-time live feed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="dashboard-body">
+
+<!-- Top Header Navigation -->
+<header class="top-header glass-panel">
+    <div class="header-left">
+        <button id="sidebarToggle" class="icon-btn">
+            <i class="ph ph-list"></i>
+        </button>
+        <div class="search-bar">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" placeholder="Search..." class="search-input">
+        </div>
+    </div>
+    
+    <div class="header-right">
+        <div style="position: relative;">
+            <button class="icon-btn notification-btn">
+                <i class="ph ph-bell"></i>
+                <span class="badge" style="display:none">0</span>
+            </button>
+            <div id="notifDropdownWrapper" class="glass-card" style="position: absolute; top: calc(100% + 10px); right: 0; width: 300px; max-height: 400px; overflow-y: auto; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600;">Notifications</div>
+                <div id="notifDropdown">
+                    <!-- Notifications JS loaded here -->
+                </div>
+            </div>
+        </div>
+        <div class="user-profile">
+            <div class="avatar">{{ name[0] if name else 'U' }}</div>
+            <div class="user-info">
+                <span class="user-name">{{ name }}</span>
+                <span class="user-role">{{ role }}</span>
+            </div>
+            <div class="dropdown-content glass-card">
+                <a href="/profile"><i class="ph ph-user"></i> Profile</a>
+                <a href="/settings"><i class="ph ph-gear"></i> Settings</a>
+                <div class="divider"></div>
+                <a href="/logout" class="text-danger"><i class="ph ph-sign-out"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="layout-wrapper">
+    <!-- Left Sidebar Fixed -->
+    <aside class="sidebar glass-panel" id="mainSidebar">
+        <div class="sidebar-header">
+            <a href="/dashboard" class="brand-link">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="HelpNet Logo" class="brand-img" onerror="this.src='https://via.placeholder.com/40/2563eb/ffffff?text=HN'">
+                <span class="brand-text">HelpNet</span>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">MAIN MENU</div>
+            <a href="/dashboard" class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">
+                <i class="ph ph-squares-four"></i>
+                <span>Dashboard</span>
+            </a>
+
+            {% if role == "Donor" %}
+            <a href="/donate" class="nav-item {% if request.path == '/donate' %}active{% endif %}">
+                <i class="ph ph-gift"></i>
+                <span>Donate Items</span>
+            </a>
+            <a href="/donation-history" class="nav-item {% if request.path == '/donation-history' %}active{% endif %}">
+                <i class="ph ph-clock-counter-clockwise"></i>
+                <span>Donation History</span>
+            </a>
+            <a href="/view-requests" class="nav-item {% if request.path == '/view-requests' %}active{% endif %}">
+                <i class="ph ph-megaphone"></i>
+                <span>NGO Requests</span>
+            </a>
+            {% elif role == "NGO" %}
+            <a href="/create-request" class="nav-item {% if request.path == '/create-request' %}active{% endif %}">
+                <i class="ph ph-plus-circle"></i>
+                <span>Create Request</span>
+            </a>
+            <a href="/view-donations" class="nav-item {% if request.path == '/view-donations' %}active{% endif %}">
+                <i class="ph ph-package"></i>
+                <span>View Donations</span>
+            </a>
+            <a href="/ngo-dashboard" class="nav-item {% if request.path == '/ngo-dashboard' %}active{% endif %}">
+                 <i class="ph ph-hand-heart"></i>
+                 <span>My Requests</span>
+            </a>
+            {% endif %}
+            <a href="/chat" class="nav-item {% if request.path.startswith('/chat') %}active{% endif %}">
+                <i class="ph ph-chats"></i>
+                <span>Messages</span>
+            </a>
+            
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="/logout" class="nav-item logout-link">
+                <i class="ph ph-sign-out"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+</div>
+
+<!-- Global Chat Function (Legacy trigger redirect) -->
+<script>
+    window.openChat = function(user) {
+        if (!isNaN(user)) {
+             window.location.href = '/chat/' + user; // direct ID
+        } else {
+             window.location.href = '/chat/resolve/' + encodeURIComponent(user);
+        }
+    };
+</script>
+
+<!-- Global Socket & Notification Logic -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        window.chatSocket = io();
+        window.myName = "{{ session.get('user_name', '') }}";
+
+        // Global Notification Logic
+        window.chatSocket.emit('join_global');
+
+        window.chatTimeAgo = function(timestamp) {
+            const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
+            if (seconds < 60) return "just now";
+            const mins = Math.floor(seconds / 60);
+            if (mins < 60) return `${mins} min${mins>1?'s':''} ago`;
+            const hours = Math.floor(mins / 60);
+            if (hours < 24) return `${hours} hr${hours>1?'s':''} ago`;
+            const days = Math.floor(hours / 24);
+            return `${days} day${days>1?'s':''} ago`;
+        }
+
+    function renderNotifications(data) {
+        const badge = document.querySelector('.notification-btn .badge');
+        const unread = data.filter(d => !d.is_read).length;
+        if(unread > 0) {
+            badge.style.display = 'block';
+            badge.innerText = unread;
+        } else {
+            badge.style.display = 'none';
+        }
+        
+        let notifHtml = '';
+        data.forEach(d => {
+            let onclickHtml = d.related_user_id ? `onclick="window.openChat('${d.related_user_id}'); document.getElementById('notifDropdownWrapper').style.display='none';"` : '';
+            let cursor = d.related_user_id ? 'cursor: pointer;' : '';
+            notifHtml += `<div class="notif-item ${d.is_read?'':'unread'}" ${onclickHtml} style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.9rem; transition: background 0.2s; ${d.is_read?'':'background: rgba(56, 189, 248, 0.05);'} ${cursor}" onmouseover="this.style.background='rgba(56, 189, 248, 0.15)'" onmouseout="this.style.background='${d.is_read?'':'rgba(56, 189, 248, 0.05)'}'">
+                ${d.message} <div style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top: 5px;">${chatTimeAgo(d.timestamp)}</div>
+            </div>`;
+        });
+        if(data.length === 0) notifHtml = '<div style="padding:20px; text-align:center; color:rgba(255,255,255,0.4);">No notifications</div>';
+        
+        document.getElementById('notifDropdown').innerHTML = notifHtml;
+    }
+
+    fetch('/api/notifications')
+        .then(r => r.json())
+        .then(data => renderNotifications(data));
+
+    window.chatSocket.on('new_notification', (data) => {
+        const badge = document.querySelector('.notification-btn .badge');
+        badge.style.display = 'block';
+        badge.innerText = parseInt(badge.innerText || 0) + 1;
+        
+        const drop = document.getElementById('notifDropdown');
+        const empty = drop.querySelector('div[style*="text-align:center"]');
+        if(empty) empty.remove();
+        
+        const div = document.createElement('div');
+        div.className = 'notif-item unread';
+        let onclickHtml = data.related_user ? `onclick="window.openChat(${data.related_user}); document.getElementById('notifDropdownWrapper').style.display='none';"` : '';
+        let cursor = data.related_user ? 'cursor: pointer;' : '';
+        div.setAttribute("onmouseover", "this.style.background='rgba(56, 189, 248, 0.15)'");
+        div.setAttribute("onmouseout", "this.style.background='rgba(56, 189, 248, 0.1)'");
+        
+        div.style.cssText = `padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.9rem; background: rgba(56, 189, 248, 0.1); transition: background 0.2s; ${cursor}`;
+        if(data.related_user) {
+            div.onclick = function() {
+                window.openChat(data.related_user);
+                document.getElementById('notifDropdownWrapper').style.display='none';
+            };
+        }
+        div.innerHTML = `${data.message} <div style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top: 5px;">just now</div>`;
+        drop.insertBefore(div, drop.firstChild);
+    });
+
+    document.querySelector('.notification-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const drop = document.getElementById('notifDropdownWrapper');
+        if (drop.style.display === 'none' || drop.style.display === '') {
+            drop.style.display = 'flex';
+            fetch('/api/notifications/read', {method:'POST'}).then(()=>{
+                document.querySelector('.notification-btn .badge').style.display = 'none';
+            });
+        } else {
+            drop.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const drop = document.getElementById('notifDropdownWrapper');
+        if (drop && drop.style.display === 'flex' && !e.target.closest('.header-right')) {
+            drop.style.display = 'none';
+        }
+    });
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('mainSidebar');
+        
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+        
+        // Mobile sidebar close on click outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    sidebar.classList.add('collapsed');
+                }
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

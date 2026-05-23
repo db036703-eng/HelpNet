@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - HelpNet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+<div class="split-layout">
+    <!-- Left Panel -->
+    <div class="split-left fade-in">
+        <div class="brand-content">
+            <div class="brand-wrapper">
+                <img src="/static/logo.png" alt="HelpNet Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/64/2563eb/ffffff?text=HN'">
+            </div>
+            <h1 class="brand-title">HelpNet</h1>
+            <p class="brand-subtitle">Join thousands of donors and NGOs making a difference every single day.</p>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="split-right" style="padding: 2rem 0;">
+        <div class="auth-wrapper delay-1 fade-in">
+            <div class="glass-card shadow-lg" style="padding: 40px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <div class="auth-header" style="text-align: left;">
+                    <h2 class="auth-title" style="font-size: 2.2rem; margin-bottom: 5px;">Create Account 🚀</h2>
+                    <p class="auth-subtitle" style="font-size: 1rem; color: rgba(255,255,255,0.7);">Join HelpNet to make a difference in your community.</p>
+                </div>
+
+                <form method="POST" style="margin-top: 30px;">
+                    <div class="form-group" style="position: relative;">
+                        <label>Full Name</label>
+                        <i class="ph ph-user" style="position: absolute; left: 15px; top: 42px; color: rgba(255,255,255,0.4); font-size: 1.2rem;"></i>
+                        <input type="text" name="name" placeholder="John Doe" class="input-modern" style="padding-left: 45px;" required>
+                    </div>
+                    <div class="form-group" style="position: relative;">
+                        <label>Email Address</label>
+                        <i class="ph ph-envelope-simple" style="position: absolute; left: 15px; top: 42px; color: rgba(255,255,255,0.4); font-size: 1.2rem;"></i>
+                        <input type="email" name="email" placeholder="name@example.com" class="input-modern" style="padding-left: 45px;" required>
+                    </div>
+                    <div class="form-group" style="position: relative;">
+                        <label>Password</label>
+                        <i class="ph ph-lock-key" style="position: absolute; left: 15px; top: 42px; color: rgba(255,255,255,0.4); font-size: 1.2rem;"></i>
+                        <input type="password" name="password" placeholder="••••••••" class="input-modern" style="padding-left: 45px;" required>
+                    </div>
+                    <div class="form-group" style="position: relative;">
+                        <label>Role</label>
+                        <i class="ph ph-identification-badge" style="position: absolute; left: 15px; top: 42px; color: rgba(255,255,255,0.4); font-size: 1.2rem; z-index: 1;"></i>
+                        <select name="role" class="input-modern" required style="appearance: none; background-color: rgba(255, 255, 255, 0.05); color: #fff; padding-left: 45px; cursor: pointer;">
+                            <option value="" disabled selected style="color: #000;">Select Role</option>
+                            <option value="Donor" style="color: #000;">Donor</option>
+                            <option value="NGO" style="color: #000;">NGO</option>
+                        </select>
+                        <i class="ph ph-caret-down" style="position: absolute; right: 15px; top: 42px; color: rgba(255,255,255,0.5); font-size: 1.2rem; pointer-events: none;"></i>
+                    </div>
+
+                    <button type="submit" class="btn-modern btn-primary mt-4" style="font-size: 1.1rem; padding: 16px;">
+                        Create Account <i class="ph ph-arrow-right" style="margin-left: 8px;"></i>
+                    </button>
+                </form>
+
+                <p class="switch text-center mt-4" style="color: rgba(255,255,255,0.7); font-size: 0.95rem;">
+                    Already have an account?
+                    <a href="/login" class="link-modern" style="font-weight: 500; margin-left: 5px; color: var(--light-blue);">Sign In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

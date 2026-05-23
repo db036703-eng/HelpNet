@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Donate Items - HelpNet{% endblock %}
+
+{% block content %}
+<div class="page-header mt-4 mb-4 fade-in">
+    <div class="welcome-section" style="margin-bottom: 0;">
+        <h1 style="font-size: 2.2rem;"><i class="ph ph-gift"></i> Donate Items</h1>
+        <p>Share essentials with NGOs and support people who need them most.</p>
+    </div>
+</div>
+
+<div class="form-container fade-in delay-1" style="max-width: 800px; margin: 0 auto;">
+    <form method="POST" enctype="multipart/form-data">
+        
+        <!-- Section 1 -->
+        <div class="glass-card mb-4 hover-glow" style="padding: 30px;">
+            <h3 style="margin-bottom: 25px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <div class="card-icon" style="background: rgba(56, 189, 248, 0.1); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: auto; font-size: 1.5rem; color: var(--light-blue); margin: 0;"><i class="ph ph-package"></i></div>
+                Item Details
+            </h3>
+            <div class="form-group">
+                <label>Category</label>
+                <div style="position: relative;">
+                    <select name="item" class="input-modern" required style="appearance: none; background-color: rgba(255, 255, 255, 0.05); color: #fff; cursor: pointer;">
+                        <option value="" disabled selected style="color: #000;">Select Category</option>
+                        <option style="color: #000;">Clothes</option>
+                        <option style="color: #000;">Food</option>
+                        <option style="color: #000;">Books</option>
+                        <option style="color: #000;">Medical Supplies</option>
+                        <option style="color: #000;">Others</option>
+                    </select>
+                    <i class="ph ph-caret-down" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; color: rgba(255,255,255,0.5);"></i>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group mb-0">
+                    <label>Quantity</label>
+                    <input type="text" name="quantity" class="input-modern" placeholder="e.g., 10 boxes" required>
+                </div>
+                <div class="form-group mb-0">
+                    <label>Urgency Level</label>
+                    <div style="position: relative;">
+                        <select name="urgency" class="input-modern" style="appearance: none; background-color: rgba(255, 255, 255, 0.05); color: #fff; cursor: pointer;">
+                            <option value="Normal" style="color: #000;">Normal</option>
+                            <option value="Urgent" style="color: #000;">Urgent</option>
+                        </select>
+                        <i class="ph ph-caret-down" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; color: rgba(255,255,255,0.5);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="glass-card mb-4 hover-glow" style="padding: 30px;">
+            <h3 style="margin-bottom: 25px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: auto; font-size: 1.5rem; color: #10b981; margin: 0;"><i class="ph ph-map-pin"></i></div>
+                Location & Timing
+            </h3>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                <div class="form-group mb-0">
+                    <label>Pickup Location</label>
+                    <input type="text" name="location" class="input-modern" placeholder="Full address" required>
+                </div>
+                <div class="form-group mb-0">
+                    <label>Preferred Date</label>
+                    <input type="date" name="pickup_date" class="input-modern" style="color: #fff; background-color: rgba(255, 255, 255, 0.05); cursor: pointer;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="glass-card mb-4 hover-glow" style="padding: 30px;">
+            <h3 style="margin-bottom: 25px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <div class="card-icon" style="background: rgba(139, 92, 246, 0.1); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: auto; font-size: 1.5rem; color: #8b5cf6; margin: 0;"><i class="ph ph-text-align-left"></i></div>
+                Description
+            </h3>
+            <div class="form-group mb-0">
+                <textarea name="description" class="input-modern" rows="4" placeholder="Add specific details about the items, condition, any special instructions..." style="resize: vertical;"></textarea>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="glass-card mb-5 hover-glow" style="padding: 30px;">
+            <h3 style="margin-bottom: 25px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <div class="card-icon" style="background: rgba(249, 115, 22, 0.1); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: auto; font-size: 1.5rem; color: #f97316; margin: 0;"><i class="ph ph-image"></i></div>
+                Upload Photo
+            </h3>
+            <div class="form-group mb-0" style="position: relative; overflow: hidden; border: 2px dashed rgba(56, 189, 248, 0.4); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.02);">
+                <input type="file" name="photo" id="photoInput" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 10;">
+                <i class="ph ph-cloud-arrow-up" style="font-size: 3rem; color: var(--light-blue); margin-bottom: 15px; display: block;"></i>
+                <span style="display: block; color: var(--light-blue); font-weight: 500; margin-bottom: 5px; font-size: 1.1rem;">Drag & Drop or Click to Upload</span>
+                <small style="color: rgba(255,255,255,0.5);">PNG, JPG up to 5MB</small>
+                <img id="preview" style="display: none; max-width: 100%; height: auto; max-height: 250px; border-radius: 8px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1); object-fit: contain; margin-left: auto; margin-right: auto; position: relative; z-index: 20;">
+            </div>
+        </div>
+
+        <div style="text-align: right; padding-bottom: 40px;">
+            <a href="/dashboard" class="btn-modern btn-secondary" style="margin-right: 15px; width: auto; background: rgba(255,255,255,0.1);">Cancel</a>
+            <button type="submit" class="btn-modern btn-primary shadow-lg" style="font-size: 1.1rem; padding: 16px 40px; width: auto;">
+                <i class="ph ph-paper-plane-right" style="margin-right: 8px;"></i> Submit Donation
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById("photoInput").onchange = function (event) {
+    if (event.target.files && event.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const img = document.getElementById("preview");
+            img.src = reader.result;
+            img.style.display = "block";
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+};
+</script>
+{% endblock %}

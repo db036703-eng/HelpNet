@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Donation History - HelpNet{% endblock %}
+
+{% block content %}
+<div class="page-header mt-4 mb-5 fade-in">
+    <div class="welcome-section" style="margin-bottom: 0;">
+        <h1 style="font-size: 2.2rem;"><i class="ph ph-clock-counter-clockwise"></i> Your Donation History</h1>
+        <p>Review the essential items you've shared with NGOs.</p>
+    </div>
+</div>
+
+<div class="cards-grid fade-in delay-1" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+    {% for d in donations %}
+    <div class="glass-card shadow-lg hover-glow p-0" style="overflow: hidden;">
+        <div style="padding: 20px; display: flex; flex-direction: column; height: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: #fff;">{{ d[2] }}</h3>
+                {% if d[6] == 'Urgent' %}
+                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 4px;">
+                    <i class="ph ph-warning-circle"></i> Urgent
+                </span>
+                {% else %}
+                <span style="background: rgba(56, 189, 248, 0.2); color: var(--light-blue); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(56, 189, 248, 0.3);">
+                    Normal
+                </span>
+                {% endif %}
+            </div>
+            
+            <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; margin-bottom: 8px;">
+                <i class="ph ph-stack" style="color: #cbd5e1; margin-right: 5px;"></i> {{ d[3] }}
+            </div>
+            <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; margin-bottom: 15px;">
+                <i class="ph ph-map-pin" style="color: #cbd5e1; margin-right: 5px;"></i> {{ d[4] }}
+            </div>
+            
+            <div style="margin-top: auto; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px; color: #10b981;">
+                <i class="ph ph-check-circle" style="font-size: 1.2rem;"></i> <span style="font-weight: 500;">Donated Successfully</span>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="glass-card" style="padding: 40px; text-align: center; grid-column: 1 / -1;">
+        <i class="ph ph-books" style="font-size: 3rem; color: rgba(255,255,255,0.2); margin-bottom: 15px;"></i>
+        <p style="color: rgba(255,255,255,0.6); font-size: 1.1rem; margin-bottom: 20px;">You haven't made any donations yet.</p>
+        <a href="/donate" class="btn-modern btn-primary" style="display: inline-block; width: auto;"><i class="ph ph-gift" style="margin-right: 5px;"></i> Make a Donation</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

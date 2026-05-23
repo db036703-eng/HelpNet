@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}View Donations - HelpNet{% endblock %}
+
+{% block content %}
+<div class="page-header mt-4 mb-5 fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+        <div class="welcome-section" style="margin-bottom: 0;">
+            <h1 style="font-size: 2.2rem;"><i class="ph ph-warehouse"></i> Inventory Viewer</h1>
+            <p>Browse through available warehouse items and claim what your NGO needs.</p>
+        </div>
+
+        <div class="filter-bar glass-card" style="padding: 10px; display: flex; gap: 10px; align-items: center;">
+            <div class="search-bar" style="width: auto; background: rgba(255,255,255,0.02); min-width: 250px;">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search items or locations..." class="search-input">
+            </div>
+            <select id="urgencyFilter" class="input-modern" style="width: auto; padding: 10px 15px; appearance: none; background: rgba(255,255,255,0.05); cursor: pointer; color: #fff;">
+                <option value="all" style="color: #000;">All Urgency</option>
+                <option value="urgent" style="color: #000;">Urgent</option>
+                <option value="normal" style="color: #000;">Normal</option>
+            </select>
+            <i class="ph ph-caret-down" style="position: absolute; right: 20px; pointer-events: none; color: rgba(255,255,255,0.5);"></i>
+        </div>
+    </div>
+</div>
+
+<div class="cards-grid fade-in delay-1" id="donationCardsContainer" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+    {% for donation in donations %}
+    <div id="donation-card-{{ donation[0] }}" class="glass-card shadow-lg hover-glow p-0 donation-card" data-title="{{ donation[2]|lower }}" data-location="{{ donation[4]|lower }}" data-urgency="{{ donation[6]|lower }}" style="overflow: hidden; display: flex; flex-direction: column;">
+        <!-- Card Image Placeholder (can be replaced with actual item images if stored) -->
+        <div style="height: 140px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(30, 64, 175, 0.4)); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <i class="ph ph-package" style="font-size: 4rem; color: rgba(255,255,255,0.4);"></i>
+        </div>
+        
+        <div style="padding: 25px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <h3 style="font-size: 1.3rem; font-weight: 600; margin: 0; color: #fff; line-height: 1.2;">{{ donation[2] }}</h3>
+                {% if donation[6] == 'Urgent' %}
+                <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 4px;">
+                    <i class="ph ph-warning-circle"></i> Urgent
+                </span>
+                {% else %}
+                <span style="background: rgba(56, 189, 248, 0.2); color: var(--light-blue); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(56, 189, 248, 0.3);">
+                    Normal
+                </span>
+                {% endif %}
+            </div>
+            
+            <p style="color: rgba(255, 255, 255, 0.8); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5; flex-grow: 1;">
+                {{ donation[5] }}
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
+                <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">
+                    <span style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 4px;">Donor</span>
+                    <strong style="color: #e2e8f0; font-size: 0.95rem;">{{ donation[1] }}</strong>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">
+                    <span style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 4px;">Quantity</span>
+                    <strong style="color: #e2e8f0; font-size: 0.95rem;">{{ donation[3] }}</strong>
+                </div>
+            </div>
+
+            <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div><i class="ph ph-map-pin" style="color: var(--light-blue);"></i> {{ donation[4] }}</div>
+                <div class="status-badge" style="padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; 
+                    {% if donation[9] == 'Available' or not donation[9] %}background: rgba(56, 189, 248, 0.2); color: var(--light-blue);{% else %}background: rgba(249, 115, 22, 0.2); color: #f97316;{% endif %}">
+                    {{ donation[9] if donation[9] else 'Available' }}
+                </div>
+            </div>
+            
+            <div class="action-footer" style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                {% if donation[9] == 'Available' or not donation[9] %}
+                <form action="{{ url_for('claim_donation', donation_id=donation[0]) }}" method="POST" style="margin: 0; padding: 0;">
+                    <button type="submit" class="btn-modern btn-primary" style="padding: 12px 15px; font-size: 1rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                        <i class="ph ph-hand-coins" style="font-size: 1.2rem;"></i> Claim Item
+                    </button>
+                </form>
+                {% else %}
+                <button type="button" class="btn-modern" style="padding: 12px 15px; font-size: 1rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); cursor: not-allowed;" disabled>
+                    <i class="ph ph-lock-key" style="font-size: 1.2rem;"></i> Already Claimed
+                </button>
+                {% endif %}
+                
+                <button type="button" class="btn-modern btn-secondary mt-2" style="padding: 12px 15px; font-size: 1rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; border-color: var(--light-blue); color: var(--light-blue);" onclick="window.openChat('{{ donation[1] }}')">
+                    <i class="ph ph-chat-centered-text" style="font-size: 1.2rem;"></i> Contact Donor
+                </button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="glass-card" style="padding: 60px 40px; text-align: center; grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <i class="ph ph-package" style="font-size: 4rem; color: rgba(255,255,255,0.1); margin-bottom: 20px;"></i>
+        <h3 style="font-size: 1.5rem; margin-bottom: 10px;">No Donations Available</h3>
+        <p style="color: rgba(255,255,255,0.6); font-size: 1.1rem; max-width: 400px;">Currently, there are no items available for claim. Please check back later.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const urgencyFilter = document.getElementById('urgencyFilter');
+        const cards = document.querySelectorAll('.donation-card');
+
+        function filterCards() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filterValue = urgencyFilter.value.toLowerCase();
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title');
+                const location = card.getAttribute('data-location');
+                const urgency = card.getAttribute('data-urgency');
+
+                const matchesSearch = title.includes(searchTerm) || location.includes(searchTerm);
+                const matchesFilter = filterValue === 'all' || urgency === filterValue;
+
+                if (matchesSearch && matchesFilter) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterCards);
+        urgencyFilter.addEventListener('change', filterCards);
+
+        // Real-time status update
+        if(window.chatSocket) {
+            window.chatSocket.on('donation_status_update', function(data) {
+                const card = document.getElementById('donation-card-' + data.donation_id);
+                if(card) {
+                    const badge = card.querySelector('.status-badge');
+                    if (badge) {
+                        badge.innerText = data.status;
+                        badge.style.background = 'rgba(249, 115, 22, 0.2)';
+                        badge.style.color = '#f97316';
+                    }
+                    const actionFooter = card.querySelector('.action-footer form');
+                    if (actionFooter) {
+                        const newBtn = document.createElement('button');
+                        newBtn.type = 'button';
+                        newBtn.className = 'btn-modern';
+                        newBtn.style.cssText = 'padding: 12px 15px; font-size: 1rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); cursor: not-allowed;';
+                        newBtn.disabled = true;
+                        newBtn.innerHTML = '<i class="ph ph-lock-key" style="font-size: 1.2rem;"></i> Already Claimed';
+                        actionFooter.parentNode.replaceChild(newBtn, actionFooter);
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

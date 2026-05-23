@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Request - HelpNet{% endblock %}
+
+{% block content %}
+<div class="page-header mt-4 mb-4 fade-in">
+    <div class="welcome-section" style="margin-bottom: 0;">
+        <h1 style="font-size: 2.2rem;"><i class="ph ph-plus-circle"></i> Create Request</h1>
+        <p>Request essential items from donors to help sustain your community efforts.</p>
+    </div>
+</div>
+
+<div class="form-container fade-in delay-1" style="max-width: 800px; margin: 0 auto;">
+    <form method="POST">
+        
+        <!-- Section 1 -->
+        <div class="glass-card mb-4 hover-glow" style="padding: 30px;">
+            <h3 style="margin-bottom: 25px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <div class="card-icon" style="background: rgba(56, 189, 248, 0.1); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: auto; font-size: 1.5rem; color: var(--light-blue); margin: 0;"><i class="ph ph-clipboard-text"></i></div>
+                Item Needed
+            </h3>
+            
+            <div class="form-group">
+                <label>Category</label>
+                <div style="position: relative;">
+                    <select name="item" class="input-modern" required style="appearance: none; background-color: rgba(255, 255, 255, 0.05); color: #fff; cursor: pointer;">
+                        <option value="" disabled selected style="color: #000;">Select Category</option>
+                        <option style="color: #000;">Clothes</option>
+                        <option style="color: #000;">Food</option>
+                        <option style="color: #000;">Books</option>
+                        <option style="color: #000;">Medical Supplies</option>
+                    </select>
+                    <i class="ph ph-caret-down" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; color: rgba(255,255,255,0.5);"></i>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group mb-0">
+                    <label>Quantity Required</label>
+                    <input type="text" name="quantity" class="input-modern" placeholder="e.g., 50 kits" required>
+                </div>
+                <div class="form-group mb-0">
+                    <label>Urgency Level</label>
+                    <div style="position: relative;">
+                        <select name="urgency" class="input-modern" style="appearance: none; background-color: rgba(255, 255, 255, 0.05); color: #fff; cursor: pointer;">
+                            <option value="Normal" style="color: #000;">Normal</option>
+                            <option value="Urgent" style="color: #000;">Urgent</option>
+                        </select>
+                        <i class="ph ph-caret-down" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; color: rgba(255,255,255,0.5);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="glass-card mb-4 hover-glow" style="padding: 30px;">
+            <h3 style="margin-bottom: 25px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: auto; font-size: 1.5rem; color: #10b981; margin: 0;"><i class="ph ph-map-pin"></i></div>
+                Location Details
+            </h3>
+            <div class="form-group mb-0">
+                <label>Delivery or Pickup Location</label>
+                <input type="text" name="location" class="input-modern" placeholder="Full address" required>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="glass-card mb-5 hover-glow" style="padding: 30px;">
+            <h3 style="margin-bottom: 25px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <div class="card-icon" style="background: rgba(139, 92, 246, 0.1); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: auto; font-size: 1.5rem; color: #8b5cf6; margin: 0;"><i class="ph ph-text-align-left"></i></div>
+                Description & Impact
+            </h3>
+            <div class="form-group mb-0">
+                <label>Why do you need this? Any specifics?</label>
+                <textarea name="description" class="input-modern" rows="5" placeholder="Explain how these items will assist your NGO, any specific sizes or types needed..." style="resize: vertical;" required></textarea>
+            </div>
+        </div>
+
+        <div style="text-align: right; padding-bottom: 40px;">
+            <a href="/dashboard" class="btn-modern btn-secondary" style="margin-right: 15px; width: auto; background: rgba(255,255,255,0.1);">Cancel</a>
+            <button type="submit" class="btn-modern btn-primary shadow-lg" style="font-size: 1.1rem; padding: 16px 40px; width: auto;">
+                <i class="ph ph-megaphone" style="margin-right: 8px;"></i> Broadcast Request
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

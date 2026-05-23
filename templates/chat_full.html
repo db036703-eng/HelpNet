@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages - HelpNet{% endblock %}
+
+{% block content %}
+<div class="chat-page-layout fade-in mt-4 mb-5">
+    <!-- Left Column: Conversations List -->
+    <div class="chat-contacts-panel glass-card p-0" style="overflow: hidden; display: flex; flex-direction: column;">
+        <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <h2 style="font-size: 1.5rem; margin: 0;"><i class="ph ph-chats-circle text-primary"></i> Messages</h2>
+        </div>
+        
+        <div class="contacts-list" style="flex-grow: 1; overflow-y: auto;">
+            {% for user in conversations %}
+            <a href="{{ url_for('chat_user', user_id=user.id) }}" class="contact-item {% if active_user and active_user.id == user.id %}active{% endif %}" style="display: flex; align-items: center; gap: 15px; padding: 15px 20px; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.02); transition: background 0.2s;">
+                <div class="avatar" style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(30, 64, 175, 0.4)); display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem; color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+                    {{ user.name[0]|upper }}
+                </div>
+                <div style="flex-grow: 1;">
+                    <h4 style="margin: 0; font-size: 1rem; color: #e2e8f0;">{{ user.name }} <span style="font-size: 0.8rem; opacity: 0.7;">({{ user.role }})</span></h4>
+                </div>
+                <i class="ph ph-caret-right" style="color: rgba(255,255,255,0.2);"></i>
+            </a>
+            {% else %}
+            <div style="padding: 30px 20px; text-align: center; color: rgba(255,255,255,0.4);">
+                <i class="ph ph-chat-teardrop-slash" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                <p>No conversations yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right Column: Active Chat Area -->
+    <div class="chat-messaging-panel glass-card p-0" style="display: flex; flex-direction: column; position: relative;">
+        {% if active_user %}
+        <div class="chat-header" style="padding: 15px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.2);">
+            <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--light-blue), var(--deep-blue)); display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff;">
+                {{ active_user.name[0]|upper }}
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">{{ active_user.name }} <span style="font-size: 0.8em; opacity: 0.7;">({{ active_user.role }})</span></h3>
+                <span style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.5);"><i class="ph ph-circle text-primary" style="font-size: 0.6rem; vertical-align: middle;"></i> Connected</span>
+            </div>
+        </div>
+
+        <div id="dedicatedChatMessages" class="chat-messages" style="flex-grow: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+            {% for msg in chat_history %}
+            <div class="chat-bubble {% if msg.sender_id == me_id %}sent{% else %}received{% endif %}">
+                <div class="chat-sender-name" style="font-size: 0.75rem; color: {% if msg.sender_id == me_id %}rgba(255,255,255,0.7){% else %}var(--light-blue){% endif %}; margin-bottom: 3px; font-weight: 500;">
+                    {% if msg.sender_id == me_id %}You{% else %}{{ msg.sender_name }}{% endif %}
+                </div>
+                <div class="chat-content">{{ msg.content }}</div>
+                <div class="chat-time" data-timestamp="{{ msg.timestamp }}"></div>
+            </div>
+            {% else %}
+            <div class="chat-empty-state">
+                <i class="ph ph-chats"></i>
+                <p>This is the beginning of your conversation with {{ active_user.name }}.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="chat-input-area" style="padding: 20px 25px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);">
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <input type="text" id="dedicatedChatInput" class="input-modern" placeholder="Type a message..." style="flex-grow: 1; padding: 12px 18px;">
+                <button id="dedicatedSendBtn" class="btn-modern btn-primary" style="width: auto; padding: 12px 20px;">
+                    <i class="ph ph-paper-plane-right"></i>
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: rgba(255,255,255,0.3);">
+            <i class="ph ph-paper-plane-tilt" style="font-size: 5rem; margin-bottom: 20px; opacity: 0.2;"></i>
+            <h3 style="font-size: 1.5rem; margin: 0;">Your Messages</h3>
+            <p style="margin-top: 10px;">Select a conversation to start chatting</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const ME_ID = {{ me_id|tojson }};
+    const ACTIVE_USER_ID = {{ active_user.id|tojson if active_user else 'null' }};
+
+    function updateDedicatedTimestamps() {
+        document.querySelectorAll('#dedicatedChatMessages .chat-time').forEach(el => {
+            if(el.dataset.timestamp) {
+                el.innerText = window.chatTimeAgo ? window.chatTimeAgo(el.dataset.timestamp) : el.dataset.timestamp;
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const messagesDiv = document.getElementById('dedicatedChatMessages');
+        if(messagesDiv) {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            updateDedicatedTimestamps();
+            setInterval(updateDedicatedTimestamps, 60000);
+        }
+
+        const chatInput = document.getElementById('dedicatedChatInput');
+        const sendBtn = document.getElementById('dedicatedSendBtn');
+
+        function sendMsg() {
+            const content = chatInput.value.trim();
+            if(!content || !ACTIVE_USER_ID) return;
+
+            window.chatSocket.emit('send_message', {
+                other_user: ACTIVE_USER_ID,
+                content: content
+            });
+
+            // Optimistic render
+            const iso = new Date().toISOString();
+            appendMessage(ME_ID, content, iso, 'You');
+            chatInput.value = '';
+        }
+
+        if(sendBtn) sendBtn.addEventListener('click', sendMsg);
+        if(chatInput) chatInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMsg();
+        });
+
+        function appendMessage(sender_id, content, timestamp, sender_name) {
+            const empty = messagesDiv.querySelector('.chat-empty-state');
+            if(empty) empty.remove();
+
+            const isMe = sender_id === ME_ID;
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble ' + (isMe ? 'sent' : 'received');
+            
+            let nameHtml = '';
+            if(isMe) {
+                nameHtml = `<div class="chat-sender-name" style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-bottom: 3px; font-weight: 500;">You</div>`;
+            } else {
+                nameHtml = `<div class="chat-sender-name" style="font-size: 0.75rem; color: var(--light-blue); margin-bottom: 3px; font-weight: 500;">${sender_name}</div>`;
+            }
+
+            bubble.innerHTML = `
+                ${nameHtml}
+                <div class="chat-content">${content}</div>
+                <div class="chat-time" data-timestamp="${timestamp}">just now</div>
+            `;
+            messagesDiv.appendChild(bubble);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        if(window.chatSocket) {
+            if(ACTIVE_USER_ID) {
+                window.chatSocket.emit('join_chat', { other_user: ACTIVE_USER_ID });
+            }
+
+            window.chatSocket.on('receive_message', function(data) {
+                if(ACTIVE_USER_ID && data.sender_id === ACTIVE_USER_ID) {
+                    appendMessage(data.sender_id, data.content, data.timestamp, data.sender_name);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
